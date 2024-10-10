@@ -1543,6 +1543,7 @@ struct drbd_device {
 
 	struct drbd_bitmap *bitmap;
 
+	bool ro_cnt_is_write; /* we want to deal with mount --remount,rw somehow */
 	int open_rw_cnt, open_ro_cnt;
 
 	/* FIXME clean comments, restructure so it is more obvious which
