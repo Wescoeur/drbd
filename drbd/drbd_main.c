@@ -2930,6 +2930,17 @@ static void drbd_release(struct gendisk *gd, fmode_t mode)
 	int open_rw_cnt, open_ro_cnt;
 
 	mutex_lock(&resource->open_release);
+	if (device->open_rw_cnt + device->open_ro_cnt == 1
+	|| (mode & FMODE_WRITE && device->open_rw_cnt == 1)) {
+		mutex_unlock(&resource->open_release);
+		/* If someone re-opened meanwhile, that's not a problem.
+		 * We can sync more than once.
+		 * But we must not miss the last one.
+		 */
+		drbd_fsync_device(device);
+		mutex_lock(&resource->open_release);
+	}
+
 	if (mode & FMODE_WRITE)
 		device->open_rw_cnt--;
 	else
